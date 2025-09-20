@@ -32,10 +32,25 @@ class ErrorsResponse(BaseModel):
 @router.post("/submit", response_model=AIMetric)
 async def submit_metric(metric: AIMetric):
     """Submit a new AI metric."""
-    # TODO: Implement metric storage
-    # For now, just return the metric with an ID
-    metric.id = f"metric_{datetime.utcnow().timestamp()}"
-    return metric
+    try:
+        # Try to use metrics collector if available
+        try:
+            from reskpoints.services.metrics.collector import get_metrics_collector
+            collector = get_metrics_collector()
+            success = await collector.collect_metric(metric)
+            
+            if not success:
+                raise HTTPException(status_code=500, detail="Failed to collect metric")
+        except ImportError:
+            # Fallback if metrics collector not available
+            pass
+        
+        # Generate ID for response
+        metric.id = f"metric_{datetime.utcnow().timestamp()}"
+        return metric
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error submitting metric: {e}")
 
 
 @router.get("/", response_model=MetricsResponse)
@@ -48,8 +63,8 @@ async def list_metrics(
     end_time: Optional[datetime] = Query(None, description="End time filter"),
 ):
     """List AI metrics with filtering and pagination."""
-    # TODO: Implement actual database query
-    # For now, return empty list
+    # TODO: Implement actual database query with the new infrastructure
+    # For now, return empty list with proper structure
     return MetricsResponse(
         metrics=[],
         total=0,
@@ -61,17 +76,32 @@ async def list_metrics(
 @router.get("/{metric_id}", response_model=AIMetric)
 async def get_metric(metric_id: str):
     """Get a specific metric by ID."""
-    # TODO: Implement metric retrieval
+    # TODO: Implement metric retrieval from database
     raise HTTPException(status_code=404, detail="Metric not found")
 
 
 @router.post("/errors", response_model=AIError)
 async def submit_error(error: AIError):
     """Submit a new AI error."""
-    # TODO: Implement error storage
-    # For now, just return the error with an ID
-    error.id = f"error_{datetime.utcnow().timestamp()}"
-    return error
+    try:
+        # Try to use metrics collector if available
+        try:
+            from reskpoints.services.metrics.collector import get_metrics_collector
+            collector = get_metrics_collector()
+            success = await collector.collect_error(error)
+            
+            if not success:
+                raise HTTPException(status_code=500, detail="Failed to collect error")
+        except ImportError:
+            # Fallback if metrics collector not available
+            pass
+        
+        # Generate ID for response
+        error.id = f"error_{datetime.utcnow().timestamp()}"
+        return error
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error submitting error: {e}")
 
 
 @router.get("/errors", response_model=ErrorsResponse)
@@ -86,7 +116,6 @@ async def list_errors(
 ):
     """List AI errors with filtering and pagination."""
     # TODO: Implement actual database query
-    # For now, return empty list
     return ErrorsResponse(
         errors=[],
         total=0,
@@ -110,17 +139,32 @@ async def get_model_metrics(
     end_time: Optional[datetime] = Query(None, description="End time for metrics"),
 ):
     """Get aggregated metrics for a specific model."""
-    # TODO: Implement model metrics aggregation
-    # For now, return a sample response
-    start = start_time or datetime.utcnow() - timedelta(hours=24)
-    end = end_time or datetime.utcnow()
-    
-    return ModelMetrics(
-        provider=provider,
-        model_name=model_name,
-        time_window_start=start,
-        time_window_end=end,
-        total_requests=0,
-        successful_requests=0,
-        failed_requests=0,
-    )
+    try:
+        # Try to use metrics collector if available
+        try:
+            from reskpoints.services.metrics.collector import get_metrics_collector
+            collector = get_metrics_collector()
+            metrics = await collector.get_model_metrics(
+                provider.value,
+                model_name,
+                start_time,
+                end_time,
+            )
+            return metrics
+        except ImportError:
+            # Fallback if metrics collector not available
+            start = start_time or datetime.utcnow() - timedelta(hours=24)
+            end = end_time or datetime.utcnow()
+            
+            return ModelMetrics(
+                provider=provider,
+                model_name=model_name,
+                time_window_start=start,
+                time_window_end=end,
+                total_requests=0,
+                successful_requests=0,
+                failed_requests=0,
+            )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting model metrics: {e}")

@@ -30,13 +30,35 @@ class BudgetAlertsResponse(BaseModel):
     per_page: int
 
 
+class OptimizationRecommendations(BaseModel):
+    """Cost optimization recommendations."""
+    recommendations: List[dict]
+    potential_total_savings: str
+    analysis_period_days: int
+
+
 @router.post("/transactions", response_model=Transaction)
 async def submit_transaction(transaction: Transaction):
     """Submit a new transaction for cost tracking."""
-    # TODO: Implement transaction storage
-    # For now, just return the transaction with an ID
-    transaction.id = f"txn_{datetime.utcnow().timestamp()}"
-    return transaction
+    try:
+        # Try to use cost tracker if available
+        try:
+            from reskpoints.services.cost.tracker import get_cost_tracker
+            tracker = get_cost_tracker()
+            success = await tracker.track_transaction(transaction)
+            
+            if not success:
+                raise HTTPException(status_code=500, detail="Failed to track transaction")
+        except ImportError:
+            # Fallback if cost tracker not available
+            pass
+        
+        # Generate ID for response
+        transaction.id = f"txn_{datetime.utcnow().timestamp()}"
+        return transaction
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error tracking transaction: {e}")
 
 
 @router.get("/transactions", response_model=TransactionsResponse)
@@ -50,8 +72,7 @@ async def list_transactions(
     end_time: Optional[datetime] = Query(None, description="End time filter"),
 ):
     """List transactions with filtering and pagination."""
-    # TODO: Implement actual database query
-    # For now, return empty list
+    # TODO: Implement actual database query with new infrastructure
     return TransactionsResponse(
         transactions=[],
         total=0,
@@ -76,24 +97,40 @@ async def get_cost_summary(
     provider: Optional[AIProvider] = Query(None, description="Filter by provider"),
 ):
     """Get cost summary for a time period."""
-    # TODO: Implement cost aggregation
-    # For now, return a sample response
-    start = start_time or datetime.utcnow() - timedelta(days=30)
-    end = end_time or datetime.utcnow()
-    
-    return CostSummary(
-        period_start=start,
-        period_end=end,
-        total_cost=Decimal('0'),
-        total_transactions=0,
-        cost_by_provider={},
-        cost_by_model={},
-        cost_by_user={},
-        cost_by_project={},
-        total_input_tokens=0,
-        total_output_tokens=0,
-        total_tokens=0,
-    )
+    try:
+        # Try to use cost aggregator if available
+        try:
+            from reskpoints.services.cost.tracker import get_cost_aggregator
+            aggregator = get_cost_aggregator()
+            summary = await aggregator.get_cost_summary(
+                start_date=start_time,
+                end_date=end_time,
+                user_id=user_id,
+                project_id=project_id,
+                provider=provider.value if provider else None,
+            )
+            return summary
+        except ImportError:
+            # Fallback if cost aggregator not available
+            start = start_time or datetime.utcnow() - timedelta(days=30)
+            end = end_time or datetime.utcnow()
+            
+            return CostSummary(
+                period_start=start,
+                period_end=end,
+                total_cost=Decimal('0'),
+                total_transactions=0,
+                cost_by_provider={},
+                cost_by_model={},
+                cost_by_user={},
+                cost_by_project={},
+                total_input_tokens=0,
+                total_output_tokens=0,
+                total_tokens=0,
+            )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting cost summary: {e}")
 
 
 @router.get("/budget/alerts", response_model=BudgetAlertsResponse)
@@ -105,8 +142,7 @@ async def list_budget_alerts(
     active_only: bool = Query(True, description="Show only active alerts"),
 ):
     """List budget alerts."""
-    # TODO: Implement budget alert query
-    # For now, return empty list
+    # TODO: Implement budget alert query with new infrastructure
     return BudgetAlertsResponse(
         alerts=[],
         total=0,
@@ -118,7 +154,66 @@ async def list_budget_alerts(
 @router.post("/budget/alerts", response_model=BudgetAlert)
 async def create_budget_alert(alert: BudgetAlert):
     """Create a new budget alert."""
-    # TODO: Implement budget alert creation
-    # For now, just return the alert with an ID
-    alert.id = f"alert_{datetime.utcnow().timestamp()}"
-    return alert
+    try:
+        # Try to use budget manager if available
+        try:
+            from reskpoints.services.cost.tracker import get_budget_manager
+            manager = get_budget_manager()
+            success = await manager.create_budget_alert(alert)
+            
+            if not success:
+                raise HTTPException(status_code=500, detail="Failed to create budget alert")
+        except ImportError:
+            # Fallback if budget manager not available
+            pass
+        
+        # Generate ID for response
+        alert.id = f"alert_{datetime.utcnow().timestamp()}"
+        return alert
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating budget alert: {e}")
+
+
+@router.get("/optimization/recommendations", response_model=OptimizationRecommendations)
+async def get_optimization_recommendations(
+    user_id: Optional[str] = Query(None, description="Filter by user ID"),
+    project_id: Optional[str] = Query(None, description="Filter by project ID"),
+    days: int = Query(30, ge=1, le=365, description="Analysis period in days"),
+):
+    """Get cost optimization recommendations."""
+    try:
+        # Try to use cost optimizer if available
+        try:
+            from reskpoints.services.cost.tracker import get_cost_optimizer
+            optimizer = get_cost_optimizer()
+            recommendations = await optimizer.analyze_usage_patterns(
+                user_id=user_id,
+                project_id=project_id,
+                days=days,
+            )
+        except ImportError:
+            # Fallback recommendations if optimizer not available
+            recommendations = [
+                {
+                    'type': 'fallback',
+                    'recommendation': 'Install dependencies to enable advanced cost optimization',
+                    'potential_savings': '0%',
+                    'confidence': 1.0,
+                }
+            ]
+        
+        # Calculate potential total savings
+        total_savings = sum(
+            float(rec.get('potential_savings', '0%').replace('%', ''))
+            for rec in recommendations
+        )
+        
+        return OptimizationRecommendations(
+            recommendations=recommendations,
+            potential_total_savings=f"{total_savings:.1f}%",
+            analysis_period_days=days,
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting recommendations: {e}")
