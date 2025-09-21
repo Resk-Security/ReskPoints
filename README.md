@@ -1,276 +1,513 @@
 # ReskPoints
 
-# Implementation Plan
+> **AI Metrics Monitoring & Cost Tracking System**
 
-- [ ] 1. Set up project structure and core infrastructure
-  - Create Python project with FastAPI, type hints, and async support
-  - Configure Docker containers for microservices architecture
-  - Set up development environment with MyPy for type checking
-  - _Requirements: 1.1, 1.2, 6.1, 6.2_
+ReskPoints is a comprehensive platform for monitoring AI model performance, tracking costs, and managing incidents across multiple AI providers. Built with FastAPI, it provides real-time insights into your AI infrastructure with enterprise-grade monitoring capabilities.
 
-- [ ] 2. Implement core data models and validation
-- [ ] 2.1 Create Pydantic models for AI metrics and errors
-  - Write AIMetric, AIError, and ModelMetrics classes with type validation
-  - Implement enum classes for error severity and metric types
-  - Create unit tests for data model validation
-  - _Requirements: 1.1, 2.1, 2.2_
+## 🚀 Features
 
-- [ ] 2.2 Implement transaction and cost tracking models
-  - Write Transaction, CostBreakdown, and TokenUsage Pydantic models
-  - Add validation for cost calculations and token counting
-  - Create unit tests for cost model validation
-  - _Requirements: 3.1, 3.2, 5.1, 5.2_
+### ✅ **Core Monitoring**
+- **Real-time AI Metrics**: Track latency, throughput, error rates, and custom metrics
+- **Multi-provider Support**: OpenAI, Anthropic, Google, Azure, and custom endpoints
+- **Anomaly Detection**: Statistical and ML-based detection with configurable thresholds
+- **Health Monitoring**: Comprehensive health checks and system status
 
-- [ ] 2.3 Implement incident management models
-  - Write Ticket, CausalityNode, and CausalityEdge models
-  - Add workflow status enums and validation rules
-  - Create unit tests for incident model validation
-  - _Requirements: 4.1, 4.2, 2.1, 2.2_
+### ✅ **Cost Intelligence**
+- **Token Tracking**: Detailed token usage and cost calculation per provider
+- **Budget Management**: Set limits, alerts, and optimization recommendations
+- **Cost Analytics**: Breakdown by user, project, model, and time period
+- **Predictive Insights**: Cost forecasting based on usage patterns
 
-- [ ] 3. Create database connections and repositories
-- [ ] 3.1 Implement TimescaleDB connection for metrics storage
-  - Write async database connection utilities with connection pooling
-  - Create metrics repository with time-series optimized queries
-  - Implement database migration scripts for metrics tables
-  - _Requirements: 1.1, 1.3_
+### ✅ **Incident Management**
+- **Automated Ticketing**: Auto-generate tickets from errors and anomalies
+- **Causality Analysis**: Graph-based error relationship tracking
+- **Workflow Management**: Configurable ticket workflows and escalation
+- **Impact Analysis**: Understand error propagation and root causes
 
-- [ ] 3.2 Implement ClickHouse connection for analytics
-  - Write ClickHouse async client with batch insert optimization
-  - Create cost analytics repository with aggregation queries
-  - Implement partitioning strategy for large-scale data
-  - _Requirements: 3.2, 3.3, 5.1, 5.2_
+### ✅ **Enterprise Ready**
+- **Scalable Architecture**: Microservices with TimescaleDB, ClickHouse, Redis
+- **Security**: JWT authentication, RBAC, audit logging, data encryption
+- **Observability**: Prometheus metrics, structured logging, distributed tracing
+- **API-First**: Comprehensive REST API with interactive documentation
 
-- [ ] 3.3 Implement NetworkX for causality graphs
+## 🏗️ Architecture
 
-Write async wrappers for NetworkX operations
-Create graph repository for error relationship management
-Implement graph traversal algorithms for impact analysis
-Requirements: 2.1, 2.2, 2.4
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Data Sources  │    │   ReskPoints    │    │   Monitoring    │
+│                 │    │     Core        │    │    & Alerts     │
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ • OpenAI APIs   │────┤ • FastAPI App   │────┤ • Prometheus    │
+│ • Custom APIs   │    │ • Async Workers │    │ • Grafana       │
+│ • Webhooks      │    │ • Business Logic│    │ • Alert Manager │
+│ • Direct SDKs   │    │ • Data Pipeline │    │ • Notifications │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                              │
+                    ┌─────────────────┐
+                    │   Data Layer    │
+                    ├─────────────────┤
+                    │ • PostgreSQL    │
+                    │ • TimescaleDB   │
+                    │ • ClickHouse    │
+                    │ • Redis Cache   │
+                    └─────────────────┘
+```
 
-- [ ] 3.4 Implement Redis caching layer
-  - Write Redis async client with connection pooling
-  - Create caching strategies for frequently accessed data
-  - Implement cache invalidation patterns for real-time updates
-  - _Requirements: 1.2, 5.3_
+## 🚀 Quick Start
 
-- [ ] 4. Implement metrics collection service
-- [ ] 4.1 Create metrics collector with async processing
-  - Write MetricsCollector class with async metric ingestion
-  - Implement batch processing for high-throughput scenarios
-  - Add metric validation and normalization logic
-  - _Requirements: 1.1, 1.3_
+### Prerequisites
+- Python 3.11+
+- Docker & Docker Compose (recommended)
+- PostgreSQL, Redis (for production)
 
-- [ ] 4.2 Implement anomaly detection algorithms
-  - Write statistical anomaly detection using moving averages and standard deviation
-  - Implement machine learning-based detection for complex patterns
-  - Create configurable threshold management system
-  - _Requirements: 1.2, 2.1_
+### Option 1: Docker Development (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/Resk-Security/ReskPoints.git
+cd ReskPoints
 
-- [ ] 4.3 Create real-time alerting system
-  - Write alert generation logic with severity-based routing
-  - Implement multiple notification channels (email, Slack, webhooks)
-  - Add alert deduplication and rate limiting
-  - _Requirements: 1.2, 1.4, 4.1_
+# Start full development stack
+cd deployments/docker
+docker-compose up
 
-- [ ] 5. Implement cost tracking service
-- [ ] 5.1 Create transaction cost calculator
-  - Write CostTracker class with provider-specific pricing models
-  - Implement token-based cost calculation for different AI providers
-  - Add support for dynamic pricing and rate changes
-  - _Requirements: 3.1, 3.2_
+# Access services:
+# • API: http://localhost:8000
+# • API Docs: http://localhost:8000/docs
+# • Prometheus: http://localhost:9090
+# • Grafana: http://localhost:3000 (admin/admin)
+```
 
-- [ ] 5.2 Implement cost aggregation and reporting
-  - Write aggregation queries for cost breakdown by user/project/time
-  - Create cost prediction algorithms based on usage patterns
-  - Implement budget monitoring with threshold alerts
-  - _Requirements: 3.2, 3.3, 3.4_
+### Option 2: Local Development
+```bash
+# Clone and setup
+git clone https://github.com/Resk-Security/ReskPoints.git
+cd ReskPoints
 
-- [ ] 5.3 Create cost optimization recommendations
-  - Write analysis algorithms to identify cost optimization opportunities
-  - Implement usage pattern analysis for efficiency recommendations
-  - Create automated cost optimization suggestions
-  - _Requirements: 3.4, 5.4_
+# Setup development environment
+./scripts/setup-dev.sh
 
-- [ ] 6. Implement incident management service
-- [ ] 6.1 Create automatic ticket generation system
-  - Write IncidentManager class with error-to-ticket mapping
-  - Implement automatic ticket creation based on error severity
-  - Add ticket routing and assignment logic
-  - _Requirements: 4.1, 4.2_
+# Activate virtual environment
+source venv/bin/activate
 
-- [ ] 6.2 Implement ticket workflow management
-  - Write workflow engine for ticket status transitions
-  - Create automatic escalation logic based on SLA rules
-  - Implement notification system for workflow events
-  - _Requirements: 4.2, 4.3_
+# Start development server
+uvicorn reskpoints.main:create_app --reload --host 0.0.0.0 --port 8000
+```
 
-- [ ] 6.3 Create ticket resolution tracking
-  - Write resolution tracking with time-to-resolution metrics
-  - Implement knowledge base integration for common issues
-  - Add post-resolution analysis and feedback collection
-  - _Requirements: 4.3, 4.4_
+### Option 3: Production Deployment
+```bash
+# Build production image
+docker build -f deployments/docker/Dockerfile --target production -t reskpoints:latest .
 
-- [ ] 7. Implement causality graph service
-- [ ] 7.1 Create error relationship tracking
-  - Write CausalityGraphService with graph construction algorithms
-  - Implement automatic error correlation based on timing and components
-  - Create graph persistence and retrieval mechanisms
-  - _Requirements: 2.1, 2.2_
+# Run with environment variables
+docker run -p 8000:8000 \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/reskpoints" \
+  -e REDIS_URL="redis://host:6379/0" \
+  -e SECRET_KEY="your-secret-key-here" \
+  reskpoints:latest
+```
 
-- [ ] 7.2 Implement impact analysis algorithms
-  - Write graph traversal algorithms for impact propagation analysis
-  - Create confidence scoring for error relationships
-  - Implement root cause analysis using graph algorithms
-  - _Requirements: 2.2, 2.3_
+## 📊 API Usage Examples
 
-- [ ] 7.3 Create graph visualization endpoints
-  - Write REST APIs for graph data retrieval
-  - Implement graph serialization for frontend consumption
-  - Create real-time graph updates via WebSocket connections
-  - _Requirements: 2.3, 2.4, 7.1, 7.2_
+### Submit AI Metrics
+```bash
+curl -X POST http://localhost:8000/api/v1/metrics/submit \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metric_type": "latency",
+    "value": 150.5,
+    "unit": "ms",
+    "provider": "openai",
+    "model_name": "gpt-3.5-turbo",
+    "endpoint": "/v1/chat/completions",
+    "user_id": "user_123",
+    "project_id": "project_456",
+    "metadata": {
+      "region": "us-east-1",
+      "environment": "production"
+    }
+  }'
+```
 
-- [ ] 8. Implement token analytics service
-- [ ] 8.1 Create token usage tracking
-  - Write TokenAnalytics class with usage pattern analysis
-  - Implement real-time token consumption monitoring
-  - Add usage efficiency scoring algorithms
-  - _Requirements: 5.1, 5.2_
+### Track Costs & Token Usage
+```bash
+curl -X POST http://localhost:8000/api/v1/cost/transactions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "model_name": "gpt-3.5-turbo",
+    "endpoint": "/v1/chat/completions",
+    "user_id": "user_123",
+    "project_id": "project_456",
+    "success": true,
+    "token_usage": {
+      "input_tokens": 100,
+      "output_tokens": 50,
+      "total_tokens": 150
+    },
+    "cost_breakdown": {
+      "input_cost": 0.001,
+      "output_cost": 0.002,
+      "total_cost": 0.003
+    }
+  }'
+```
 
-- [ ] 8.2 Implement quota management system
-  - Write quota enforcement with real-time usage checking
-  - Create quota allocation and adjustment mechanisms
-  - Implement quota violation alerts and throttling
-  - _Requirements: 5.2, 5.3_
+### Create Incident Tickets
+```bash
+curl -X POST http://localhost:8000/api/v1/incidents/tickets \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "High latency detected in OpenAI GPT-3.5",
+    "description": "Average response time exceeded 2s threshold",
+    "priority": "high",
+    "category": "performance",
+    "severity": "high",
+    "affected_service": "openai-gpt-3.5",
+    "metadata": {
+      "metric_threshold": "2000ms",
+      "current_value": "2850ms",
+      "detection_time": "2024-01-15T10:30:00Z"
+    }
+  }'
+```
 
-- [ ] 8.3 Create usage optimization recommendations
-  - Write algorithms to analyze token usage patterns
-  - Implement optimization suggestions based on usage data
-  - Create efficiency benchmarking against best practices
-  - _Requirements: 5.3, 5.4_
+### Query Cost Analytics
+```bash
+# Get cost summary for a project
+curl "http://localhost:8000/api/v1/cost/summary?project_id=project_456&days=30"
 
-- [ ] 9. Implement integration service for external endpoints
-- [ ] 9.1 Create multi-protocol API connectors
-  - Write async connectors for REST, GraphQL, gRPC, and WebSocket protocols
-  - Implement automatic endpoint discovery via OpenAPI specifications
-  - Add connection pooling and retry mechanisms with exponential backoff
-  - _Requirements: 6.1, 6.2_
+# Get budget alerts
+curl "http://localhost:8000/api/v1/cost/budget-alerts?project_id=project_456"
 
-- [ ] 9.2 Implement data normalization layer
-  - Write data transformation pipelines for different endpoint formats
-  - Create schema mapping and validation for incoming data
-  - Implement data quality checks and error handling
-  - _Requirements: 6.2, 6.3_
+# Get cost breakdown by model
+curl "http://localhost:8000/api/v1/cost/breakdown?group_by=model_name&days=7"
+```
 
-- [ ] 9.3 Create endpoint health monitoring
-  - Write health check mechanisms for all connected endpoints
-  - Implement automatic failover and circuit breaker patterns
-  - Add endpoint performance monitoring and SLA tracking
-  - _Requirements: 6.3, 6.4_
+## 🔧 Configuration
 
-- [ ] 10. Implement FastAPI web services and routing
-- [ ] 10.1 Create metrics API endpoints
-  - Write REST endpoints for metrics submission and retrieval
-  - Implement GraphQL schema for complex metric queries
-  - Add real-time metrics streaming via WebSocket
-  - _Requirements: 1.1, 1.2, 7.1_
+Create a `.env` file in the project root:
 
-- [ ] 10.2 Create cost tracking API endpoints
-  - Write REST endpoints for cost data and reporting
-  - Implement cost breakdown APIs with filtering and aggregation
-  - Add cost prediction and budget monitoring endpoints
-  - _Requirements: 3.1, 3.2, 3.3, 7.1_
+```env
+# Application Settings
+DEBUG=true
+HOST=0.0.0.0
+PORT=8000
+SECRET_KEY=your-secret-key-change-in-production
 
-- [ ] 10.3 Create incident management API endpoints
-  - Write REST endpoints for ticket CRUD operations
-  - Implement workflow APIs for ticket status management
-  - Add bulk operations and reporting endpoints
-  - _Requirements: 4.1, 4.2, 4.3, 7.1_
+# Database URLs
+DATABASE_URL=postgresql://user:pass@localhost:5432/reskpoints
+TIMESCALE_URL=postgresql://user:pass@localhost:5433/reskpoints_metrics
+CLICKHOUSE_URL=http://localhost:8123
+REDIS_URL=redis://localhost:6379/0
 
-- [ ] 10.4 Create causality graph API endpoints
-  - Write REST endpoints for graph data retrieval and manipulation
-  - Implement graph query APIs with filtering and traversal
-  - Add real-time graph update notifications
-  - _Requirements: 2.1, 2.2, 2.3, 7.1_
+# External Integrations
+ALERT_WEBHOOK_URL=https://hooks.slack.com/services/your/webhook/url
 
-- [ ] 11. Implement authentication and authorization
-- [ ] 11.1 Create RBAC system with JWT tokens
-  - Write authentication middleware with JWT token validation
-  - Implement role-based access control with granular permissions
-  - Create user management APIs with role assignment
-  - _Requirements: 8.1, 8.2_
+# Security & Auth
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_MINUTES=60
+RATE_LIMIT_REQUESTS=100
 
-- [ ] 11.2 Implement audit logging system
-  - Write audit trail logging for all sensitive operations
-  - Create audit log storage with tamper-proof mechanisms
-  - Implement audit report generation and compliance checking
-  - _Requirements: 8.2, 8.3_
+# Monitoring
+PROMETHEUS_PORT=9090
+LOG_LEVEL=INFO
+LOG_FORMAT=json
+```
 
-- [ ] 11.3 Add data encryption and security measures
-  - Implement data encryption at rest and in transit
-  - Add input validation and sanitization for all endpoints
-  - Create security monitoring and intrusion detection
-  - _Requirements: 8.3, 8.4_
+### Environment-Specific Configuration
 
-- [ ] 12. Create dashboard and visualization components
-- [ ] 12.1 Implement real-time metrics dashboard
-  - Write React components for real-time metric visualization
-  - Create interactive charts with drill-down capabilities
-  - Implement WebSocket connections for live data updates
-  - _Requirements: 7.1, 7.2_
+<details>
+<summary><b>Development</b></summary>
 
-- [ ] 12.2 Create cost analysis dashboard
-  - Write cost visualization components with breakdown charts
-  - Implement cost trend analysis and prediction displays
-  - Create budget monitoring and alert visualization
-  - _Requirements: 7.1, 7.3_
+```env
+DEBUG=true
+LOG_LEVEL=DEBUG
+DATABASE_URL=postgresql://postgres:password@localhost:5432/reskpoints_dev
+REDIS_URL=redis://localhost:6379/1
+```
+</details>
 
-- [ ] 12.3 Create causality graph visualization
-  - Write interactive graph visualization using D3.js or similar
-  - Implement graph navigation and filtering controls
-  - Create impact analysis visualization with highlighting
-  - _Requirements: 7.2, 7.3_
+<details>
+<summary><b>Production</b></summary>
 
-- [ ] 13. Implement comprehensive testing suite
-- [ ] 13.1 Create unit tests for all services
-  - Write unit tests for each service class with 90%+ coverage
-  - Implement mock objects for external dependencies
-  - Create parameterized tests for edge cases and error conditions
-  - _Requirements: All requirements validation_
+```env
+DEBUG=false
+LOG_LEVEL=INFO
+DATABASE_URL=postgresql://user:secure_pass@prod-db:5432/reskpoints
+TIMESCALE_URL=postgresql://user:secure_pass@timescale-prod:5432/metrics
+CLICKHOUSE_URL=http://clickhouse-prod:8123
+REDIS_URL=redis://redis-prod:6379/0
+SECRET_KEY=production-secret-key-256-bit
+```
+</details>
 
-- [ ] 13.2 Create integration tests for workflows
-  - Write integration tests for complete error-to-resolution workflows
-  - Implement end-to-end cost tracking and reporting tests
-  - Create multi-service integration tests with real database connections
-  - _Requirements: All requirements validation_
+## 📈 Monitoring & Observability
 
-- [ ] 13.3 Implement performance and load testing
-  - Write load tests using Locust for high-throughput scenarios
-  - Create performance benchmarks for critical operations
-  - Implement chaos engineering tests for system resilience
-  - _Requirements: 1.2, 6.3, 6.4_
+### Health Checks
+- **Liveness**: `GET /live` - Basic application health
+- **Readiness**: `GET /ready` - Service dependencies health
+- **Detailed Health**: `GET /api/v1/health/` - Comprehensive system status
 
-- [ ] 14. Set up monitoring and observability
-- [ ] 14.1 Configure application monitoring
-  - Set up Prometheus metrics collection for all services
-  - Implement distributed tracing with Jaeger
-  - Create health check endpoints for all microservices
-  - _Requirements: 1.1, 1.2_
+### Metrics Collection
+ReskPoints exposes Prometheus metrics at `/metrics`:
 
-- [ ] 14.2 Implement logging and error tracking
-  - Configure structured logging with correlation IDs
-  - Set up centralized log aggregation with ELK stack
-  - Implement error tracking and alerting for application errors
-  - _Requirements: 1.3, 2.1_
+```
+# HELP reskpoints_requests_total Total HTTP requests
+# TYPE reskpoints_requests_total counter
+reskpoints_requests_total{method="POST",endpoint="/api/v1/metrics/submit"} 1250
 
-- [ ] 15. Create deployment and infrastructure automation
-- [ ] 15.1 Create Docker containers and orchestration
-  - Write Dockerfiles for all microservices with multi-stage builds
-  - Create Docker Compose configuration for local development
-  - Implement Kubernetes manifests for production deployment
-  - _Requirements: 6.1, 6.2_
+# HELP reskpoints_request_duration_seconds Request duration
+# TYPE reskpoints_request_duration_seconds histogram
+reskpoints_request_duration_seconds_bucket{le="0.1"} 1100
+```
 
-- [ ] 15.2 Implement CI/CD pipeline
-  - Create GitHub Actions workflows for automated testing and deployment
-  - Implement automated security scanning and dependency checking
-  - Set up automated database migrations and rollback procedures
-  - _Requirements: All requirements validation_
+### Pre-configured Dashboards
+When using Docker Compose, Grafana includes:
+- **API Performance**: Request rates, latencies, error rates
+- **Cost Analytics**: Cost trends, budget tracking, optimization opportunities
+- **System Health**: Database connections, cache hit rates, queue sizes
+- **Business Metrics**: Token usage, model performance, user activity
+
+## 🛠️ Development
+
+### Project Structure
+```
+reskpoints/
+├── api/                    # FastAPI routes and middleware
+│   ├── v1/                # API version 1 endpoints
+│   │   ├── metrics.py     # Metrics collection endpoints
+│   │   ├── cost.py        # Cost tracking endpoints
+│   │   ├── incidents.py   # Incident management endpoints
+│   │   └── health.py      # Health check endpoints
+│   └── middleware/        # Authentication, CORS, etc.
+├── core/                  # Core configuration and utilities
+│   ├── config.py         # Application settings
+│   ├── logging.py        # Structured logging setup
+│   └── security.py       # Security utilities
+├── models/               # Pydantic data models
+│   ├── metrics.py        # AI metrics models
+│   ├── cost.py           # Cost tracking models
+│   ├── incident.py       # Incident management models
+│   └── enums.py          # Shared enumerations
+├── services/             # Business logic layer
+│   ├── metrics/          # Metrics collection and analysis
+│   ├── cost/             # Cost calculation and optimization
+│   ├── incident/         # Incident management workflows
+│   ├── causality/        # Causality graph analysis
+│   └── monitoring/       # System monitoring and alerting
+├── infrastructure/       # External integrations
+│   ├── database/         # Database connections and repositories
+│   ├── cache/            # Redis caching layer
+│   └── external/         # External API integrations
+├── repositories/         # Data access layer
+└── utils/               # Shared utilities
+```
+
+### Running Tests
+```bash
+# Install development dependencies
+pip install -e ".[dev,test]"
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=reskpoints --cov-report=html
+
+# Run specific test categories
+pytest tests/unit/          # Unit tests
+pytest tests/integration/   # Integration tests
+pytest -m "not slow"        # Skip slow tests
+```
+
+### Code Quality
+```bash
+# Format code
+black reskpoints/ tests/
+isort reskpoints/ tests/
+
+# Lint code
+flake8 reskpoints/ tests/
+mypy reskpoints/
+
+# Run all quality checks
+pre-commit run --all-files
+```
+
+### Adding New Features
+
+1. **Data Models**: Define Pydantic models in `models/`
+2. **API Endpoints**: Add routes in `api/v1/`
+3. **Business Logic**: Implement services in `services/`
+4. **Data Access**: Create repositories in `repositories/`
+5. **Tests**: Add tests in `tests/unit/` and `tests/integration/`
+
+Example - Adding a new metric type:
+
+```python
+# models/metrics.py
+class CustomMetric(AIMetric):
+    custom_field: str
+    additional_data: Dict[str, Any]
+
+# api/v1/metrics.py
+@router.post("/custom")
+async def submit_custom_metric(metric: CustomMetric):
+    return await metrics_service.process_custom_metric(metric)
+
+# services/metrics/processor.py
+async def process_custom_metric(self, metric: CustomMetric):
+    # Business logic implementation
+    pass
+```
+
+## 🚢 Production Deployment
+
+### Docker Production
+```yaml
+# docker-compose.prod.yml
+version: '3.8'
+services:
+  reskpoints:
+    image: reskpoints:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - SECRET_KEY=${SECRET_KEY}
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - timescaledb
+```
+
+### Kubernetes Deployment
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reskpoints
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: reskpoints
+  template:
+    metadata:
+      labels:
+        app: reskpoints
+    spec:
+      containers:
+      - name: reskpoints
+        image: reskpoints:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: reskpoints-secrets
+              key: database-url
+```
+
+### Scaling Considerations
+
+- **Horizontal Scaling**: Stateless application, scales with load balancers
+- **Database**: Use read replicas for analytics queries
+- **Cache**: Redis Cluster for high availability
+- **Monitoring**: Distributed tracing with Jaeger for multi-instance deployments
+
+## 🔒 Security
+
+### Authentication & Authorization
+- **JWT Tokens**: Secure API access with configurable expiration
+- **RBAC**: Role-based access control with granular permissions
+- **API Keys**: Optional API key authentication for service-to-service
+
+### Data Protection
+- **Encryption**: Data encrypted at rest and in transit (TLS 1.3)
+- **Input Validation**: Comprehensive request validation and sanitization
+- **Audit Logging**: All sensitive operations logged for compliance
+
+### Security Headers
+```python
+# Automatic security headers
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Quick Contribution Setup
+```bash
+# Fork the repository and clone
+git clone https://github.com/yourusername/ReskPoints.git
+cd ReskPoints
+
+# Create a feature branch
+git checkout -b feature/your-feature-name
+
+# Setup development environment
+./scripts/setup-dev.sh
+
+# Make your changes and add tests
+# ... develop ...
+
+# Run quality checks
+pre-commit run --all-files
+pytest
+
+# Commit and push
+git commit -m "feat: add your feature description"
+git push origin feature/your-feature-name
+```
+
+### Development Guidelines
+- **Code Style**: Follow Black formatting and PEP 8
+- **Testing**: Maintain >90% test coverage
+- **Documentation**: Update docstrings and API documentation
+- **Type Safety**: Use type hints for all new code
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Links
+
+- **Documentation**: [API Docs](http://localhost:8000/docs) (when running)
+- **Repository**: [GitHub](https://github.com/Resk-Security/ReskPoints)
+- **Issues**: [Bug Reports](https://github.com/Resk-Security/ReskPoints/issues)
+- **Security**: [Security Policy](SECURITY.md)
+
+## 🎯 Roadmap
+
+### Current Version (v0.1.0)
+- ✅ Core API endpoints and data models
+- ✅ Basic monitoring and health checks
+- ✅ Docker development environment
+- ✅ Authentication framework
+
+### Next Release (v0.2.0)
+- 🔄 Database persistence layer
+- 🔄 Real-time anomaly detection
+- 🔄 Advanced cost analytics
+- 🔄 WebSocket real-time updates
+
+### Future Releases
+- 📋 Machine learning-based insights
+- 📋 Advanced causality analysis
+- 📋 Multi-tenant architecture
+- 📋 Mobile application support
+
+---
+
+**Built with ❤️ by Resk Security**
+
+For questions or support, please [open an issue](https://github.com/Resk-Security/ReskPoints/issues) or contact us at contact@resk-security.com
