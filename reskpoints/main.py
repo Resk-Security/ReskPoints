@@ -54,6 +54,22 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Metrics collector initialization failed: {e}")
     
+    # Start monitoring services
+    try:
+        from reskpoints.services.monitoring.metrics import start_monitoring_tasks
+        await start_monitoring_tasks()
+        logger.info("Monitoring services started")
+    except Exception as e:
+        logger.warning(f"Monitoring services initialization failed: {e}")
+    
+    # Start incident monitoring
+    try:
+        from reskpoints.services.incident.manager import start_incident_monitoring
+        await start_incident_monitoring()
+        logger.info("Incident monitoring started")
+    except Exception as e:
+        logger.warning(f"Incident monitoring initialization failed: {e}")
+    
     logger.info("ReskPoints application started successfully")
     
     yield
