@@ -4,32 +4,6 @@
 
 ReskPoints is a comprehensive platform for monitoring AI model performance, tracking costs, and managing incidents across multiple AI providers. Built with FastAPI, it provides real-time insights into your AI infrastructure with enterprise-grade monitoring capabilities.
 
-## 🚀 Features
-
-### ✅ **Core Monitoring**
-- **Real-time AI Metrics**: Track latency, throughput, error rates, and custom metrics
-- **Multi-provider Support**: OpenAI, Anthropic, Google, Azure, and custom endpoints
-- **Anomaly Detection**: Statistical and ML-based detection with configurable thresholds
-- **Health Monitoring**: Comprehensive health checks and system status
-
-### ✅ **Cost Intelligence**
-- **Token Tracking**: Detailed token usage and cost calculation per provider
-- **Budget Management**: Set limits, alerts, and optimization recommendations
-- **Cost Analytics**: Breakdown by user, project, model, and time period
-- **Predictive Insights**: Cost forecasting based on usage patterns
-
-### ✅ **Incident Management**
-- **Automated Ticketing**: Auto-generate tickets from errors and anomalies
-- **Causality Analysis**: Graph-based error relationship tracking
-- **Workflow Management**: Configurable ticket workflows and escalation
-- **Impact Analysis**: Understand error propagation and root causes
-
-### ✅ **Enterprise Ready**
-- **Scalable Architecture**: Microservices with TimescaleDB, ClickHouse, Redis
-- **Security**: JWT authentication, RBAC, audit logging, data encryption
-- **Observability**: Prometheus metrics, structured logging, distributed tracing
-- **API-First**: Comprehensive REST API with interactive documentation
-
 ## 🏗️ Architecture
 
 ```
