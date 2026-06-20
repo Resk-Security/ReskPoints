@@ -211,4 +211,4 @@ mypy src/            # passes
 
 ## License
 
-MIT. Built with [resklogits](https://github.com/Resk-Security/resk-logits).
+Apache 2.0 — see [LICENSE](LICENSE). Built with [resklogits](https://github.com/Resk-Security/resk-logits).
