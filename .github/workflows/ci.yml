@@ -24,11 +24,6 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 
-      - name: Install resklogits (dependency)
-        run: |
-          uv venv
-          uv pip install resklogits
-
       - name: Install project
         run: uv pip install -e ".[dev]"
 

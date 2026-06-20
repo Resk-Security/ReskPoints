@@ -1,6 +1,6 @@
 [project]
 name = "reskpoints"
-version = "0.1.0"
+version = "0.1.1"
 description = "Agent Action Logging Platform — log all AI/LLM agent actions to any platform"
 readme = "README.md"
 license = {text = "MIT"}
@@ -17,15 +17,14 @@ classifiers = [
 ]
 
 dependencies = [
-    "resklogits>=0.2.0",
     "pyyaml>=6.0",
     "httpx>=0.27.0",
-    "pydantic>=2.0.0",
     "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
 all = ["reskpoints[webhook,datadog,prometheus,opentelemetry]"]
+resklogits = ["resklogits>=0.2.0"]
 webhook = []
 datadog = ["datadog-api-client>=2.0"]
 prometheus = ["prometheus-client>=0.19"]

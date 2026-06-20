@@ -6,14 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Dry run (don't upload to PyPI)"
+        description: "Dry run (Test PyPI)"
         type: boolean
         default: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: release
     permissions:
       id-token: write
       contents: read
@@ -27,7 +26,7 @@ jobs:
           enable-cache: true
 
       - name: Set up Python
-        run: uv python install 3.13
+        run: uv python install 3.10
 
       - name: Build package
         run: |
@@ -40,6 +39,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Publish to Test PyPI (dry run)
         if: ${{ inputs.dry_run }}
