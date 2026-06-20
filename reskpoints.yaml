@@ -1,0 +1,67 @@
+agent_logger:
+  environment: "${ENV:development}"
+
+  masking:
+    enabled: true
+    sensitive_fields:
+      - api_key
+      - password
+      - token
+      - secret
+      - authorization
+      - auth_token
+      - access_token
+      - refresh_token
+      - private_key
+      - session_id
+
+  sampling:
+    default_rate: 1.0
+    rules:
+      - action: "heartbeat"
+        rate: 0.01
+      - action: "status_check"
+        rate: 0.05
+      - action: "tool_*"
+        rate: 1.0
+      - action: "message_*"
+        rate: 0.5
+
+  buffering:
+    max_size: 1000
+    flush_interval: 5.0
+
+  retry:
+    max_attempts: 3
+    backoff: [0.5, 1.5, 4.5]
+    circuit_breaker:
+      threshold: 5
+      recovery_time: 30
+
+  platforms:
+    console:
+      enabled: true
+      format: "human"
+
+    webhook:
+      enabled: false
+      url: "${WEBHOOK_URL}"
+      signing_secret: "${WEBHOOK_SECRET}"
+      timeout: 10.0
+
+    file:
+      enabled: false
+      path: "/var/log/agent_actions.jsonl"
+
+    datadog:
+      enabled: false
+      api_key: "${DD_API_KEY}"
+      site: "datadoghq.eu"
+      tags:
+        team: "resk"
+        project: "reskpoints"
+
+    prometheus:
+      enabled: false
+      pushgateway_url: "http://localhost:9091"
+      job_name: "agent_actions"

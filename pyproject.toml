@@ -1,127 +1,71 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "reskpoints"
 version = "0.1.0"
-description = "AI metrics monitoring and cost tracking system"
+description = "Agent Action Logging Platform — log all AI/LLM agent actions to any platform"
 readme = "README.md"
-requires-python = ">=3.11"
-license = {text = "MIT"}
-authors = [
-    {name = "Resk Security", email = "contact@resk-security.com"},
-]
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{name = "RESK Security"}]
+keywords = ["agent", "llm", "ai", "logging", "monitoring", "observability"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Monitoring",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+
 dependencies = [
-    "fastapi>=0.104.0",
-    "uvicorn[standard]>=0.24.0",
-    "pydantic>=2.5.0",
-    "pydantic-settings>=2.1.0",
-    "httpx>=0.25.0",
-    "aioredis>=2.0.1",
-    "asyncpg>=0.29.0",
-    "clickhouse-connect>=0.6.0",
-    "networkx>=3.2",
-    "numpy>=1.24.0",
-    "pandas>=2.0.0",
-    "scikit-learn>=1.3.0",
-    "prometheus-client>=0.19.0",
-    "structlog>=23.2.0",
-    "python-multipart>=0.0.6",
-    "python-jose[cryptography]>=3.3.0",
-    "passlib[bcrypt]>=1.7.4",
-    "alembic>=1.13.0",
-    "sqlalchemy[asyncio]>=2.0.0",
-    "websockets>=12.0",
+    "resklogits>=0.2.0",
+    "pyyaml>=6.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
+all = ["reskpoints[webhook,datadog,prometheus,opentelemetry]"]
+webhook = []
+datadog = ["datadog-api-client>=2.0"]
+prometheus = ["prometheus-client>=0.19"]
+opentelemetry = ["opentelemetry-api>=1.20", "opentelemetry-sdk>=1.20"]
+slack = ["httpx>=0.27.0"]
 dev = [
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.1.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "flake8>=6.0.0",
-    "mypy>=1.7.0",
-    "pre-commit>=3.5.0",
-    "locust>=2.17.0",
-]
-test = [
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.1.0",
-    "httpx>=0.25.0",
-    "fakeredis>=2.20.0",
+    "pytest>=7.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "types-PyYAML>=6.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/Resk-Security/ReskPoints"
-Documentation = "https://github.com/Resk-Security/ReskPoints/blob/main/README.md"
 Repository = "https://github.com/Resk-Security/ReskPoints"
-"Bug Tracker" = "https://github.com/Resk-Security/ReskPoints/issues"
 
 [project.scripts]
-reskpoints = "reskpoints.main:main"
+reskpoints = "reskpoints.cli:main"
 
-[tool.hatch.version]
-path = "reskpoints/__init__.py"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.black]
-line-length = 88
-target-version = ['py311']
-include = '\.pyi?$'
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-
-[tool.mypy]
-python_version = "3.11"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
+[tool.hatch.build.targets.wheel]
+packages = ["src/reskpoints"]
 
 [tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-ra -q --strict-markers --strict-config"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 
-[tool.coverage.run]
-source = ["reskpoints"]
-omit = ["*/tests/*"]
+[tool.ruff]
+line-length = 100
+target-version = "py310"
 
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4"]
+ignore = ["E501", "B008"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+disallow_untyped_defs = false
