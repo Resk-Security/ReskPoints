@@ -24,7 +24,6 @@ dependencies = [
 
 [project.optional-dependencies]
 all = ["reskpoints[webhook,datadog,prometheus,opentelemetry]"]
-resklogits = ["resklogits>=0.2.0"]
 webhook = []
 datadog = ["datadog-api-client>=2.0"]
 prometheus = ["prometheus-client>=0.19"]
