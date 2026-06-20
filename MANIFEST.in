@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include reskpoints.yaml
+recursive-include src/reskpoints *.py
+recursive-include src/reskpoints *.yaml
+recursive-include src/reskpoints py.typed

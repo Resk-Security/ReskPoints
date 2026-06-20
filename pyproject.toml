@@ -52,6 +52,20 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/reskpoints"]
+include = [
+    "/src/reskpoints/**/*.py",
+    "/src/reskpoints/py.typed",
+    "reskpoints.yaml",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+    "/reskpoints.yaml",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
