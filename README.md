@@ -1,6 +1,6 @@
 # ReskPoints
 
-**Agent Action Logging Platform** — Log all AI/LLM agent actions to any platform with probability, parameters, and results.
+> **The AI Agent Logger** — track every action your agents take, with probability, parameters, and results. Ship to any platform.
 
 [![PyPI version](https://img.shields.io/pypi/v/reskpoints.svg)](https://pypi.org/project/reskpoints/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/reskpoints.svg)](https://pypi.org/project/reskpoints/)
@@ -9,190 +9,149 @@
 
 ---
 
-## Features
+You have **AI agents** making decisions — calling tools, executing code, sending messages, searching databases.  
+**ReskPoints** captures every action: *what* the agent did, *how confident* it was, *what parameters* it used, and *what happened*.  
 
-- **AgentLogger** — sync (`log`) and async (`alog`) API
-- **Decorator** — `@log_action` auto-logs every function call
-- **Probabilistic sampling** — configurable rate per action pattern
-- **Field masking** — automatic redaction of sensitive fields (api_key, token, etc.)
-- **Multi-platform** — Console, File, Webhook, Prometheus, Datadog, OpenTelemetry, Mock
-- **Reliability** — Retry with exponential backoff, circuit breaker, buffering, batching
-- **CLI** — `reskpoints log`, `test`, `status`, `tail`, `replay`
-- **Config-driven** — YAML configuration with env variable interpolation
+Pipe it to **Datadog, Prometheus, OpenTelemetry, webhooks, JSON files, or your console** — all from a single logger.
 
 ---
 
-## Installation
-
-```bash
-pip install reskpoints
-```
-
-With optional platform support:
-
-```bash
-pip install reskpoints[all]          # All platforms
-pip install reskpoints[datadog]      # Datadog support
-pip install reskpoints[prometheus]   # Prometheus support
-pip install reskpoints[opentelemetry]# OpenTelemetry support
-```
-
-From source:
-
-```bash
-git clone https://github.com/Resk-Security/ReskPoints.git
-cd ReskPoints
-pip install -e ".[all,dev]"
-```
-
----
-
-## Quick Start
+## One line, full trace
 
 ```python
 from reskpoints import AgentLogger
 
 logger = AgentLogger()
 
+logger.log("agent-1", "tool_call", 0.95, {"tool": "search", "query": "RAG papers"}, "3 results")
+```
+
+Async? Same API:
+
+```python
+await logger.alog("agent-1", "tool_call", 0.95, {"tool": "search"}, "3 results")
+```
+
+Decorator? Wrap any function:
+
+```python
+@log_action(agent_id="coder")
+def execute_python(code: str) -> str:
+    ...
+```
+
+---
+
+## Why ReskPoints?
+
+| Problem | ReskPoints |
+|---------|------------|
+| **"I don't know what my agent is doing"** | Every tool call, API request, and decision is logged with full context |
+| **"It's too slow to add logging"** | One decorator, one line of code. Done. |
+| **"My logs go everywhere and nowhere"** | Ship to Console, File, Webhook, Datadog, Prometheus, OpenTelemetry — or all at once |
+| **"Sensitive data leaks in params"** | Auto-mask api_key, token, password, and custom fields before they leave your app |
+| **"I log too much / too little"** | Probabilistic sampling per action pattern (`heartbeat: 1%`, `tool_*: 100%`) |
+| **"One platform going down kills my logs"** | Retry + backoff + circuit breaker + in-memory buffering |
+
+---
+
+## Install
+
+```bash
+pip install reskpoints
+pip install reskpoints[datadog,prometheus,opentelemetry]  # with extras
+```
+
+---
+
+## Features
+
+- **AgentLogger** — sync `log()` and async `alog()` with auto-enrichment (timestamp, host, env, UUID)
+- **Decorator** — `@log_action` logs every call automatically with params + result + duration
+- **Sampling** — per-action probabilistic rate (`tool_call: 100%`, `heartbeat: 1%`)
+- **Masking** — automatic redaction of sensitive fields (`api_key`, `token`, `password`, regex patterns)
+- **7 platforms** — Console, File (JSONL), Webhook (HMAC-signed), Datadog, Prometheus, OpenTelemetry, Mock
+- **Reliability** — exponential backoff retry, circuit breaker, buffering, batching
+- **CLI** — `reskpoints log`, `test`, `status`, `tail`, `replay`
+- **Config** — YAML-driven with `${ENV_VAR:default}` interpolation
+
+---
+
+## Platforms
+
+| Platform | Extra | Use case |
+|----------|-------|----------|
+| Console | *built-in* | Dev/debug |
+| File (JSONL) | *built-in* | Local storage, replay |
+| Webhook | *built-in* | Custom endpoints, Zapier, N8n |
+| Datadog | `[datadog]` | Datadog Logs + Metrics |
+| Prometheus | `[prometheus]` | Pushgateway metrics |
+| OpenTelemetry | `[opentelemetry]` | OTLP spans → any backend |
+| Mock | *built-in* | Testing |
+
+---
+
+## Architecture
+
+```
+Agent code                         ReskPoints                     Your observability stack
+─────────────────────────────────────────────────────────────────────────────────────
+
+@log_action                          ┌─────────────┐                ┌──────────┐
+def search(q):         ───────────▶  │  Sampler    │                │  Console │
+  ...                                │  (rate per  │                ├──────────┤
+                                     │   action)   │                │  File    │
+logger.log(                          └──────┬──────┘                ├──────────┤
+  agent_id="agent-1",                       │                       │  Webhook │
+  action="tool_call",              ┌────────▼───────┐               ├──────────┤
+  probability=0.95,                │   FieldMasker  │               │  Datadog │
+  params={...},                    │  (auto-redact  │               ├──────────┤
+  result="ok",                     │   secrets)     │               │Prometheus│
+)                                  └────────┬───────┘               ├──────────┤
+                                           │                       │  OTel    │
+                                   ┌───────▼────────┐              └──────────┘
+                                   │   MultiPlatform │
+                                   │  ┌──────────┐  │
+                                   │  │  retry   │  │
+                                   │  │  circuit │  │
+                                   │  │  buffer  │  │
+                                   │  └──────────┘  │
+                                   └────────────────┘
+```
+
+Each platform is wrapped with retry (exp backoff), circuit breaker (5 fails → 30s recovery), and buffering (1000 entries).
+
+---
+
+## Quick tour
+
+```python
+# Minimal
+logger.log("agent-1", "search", 0.95, {"q": "papers"}, "3 results")
+
+# Full
 logger.log(
     agent_id="agent-1",
     action="tool_call",
     probability=0.95,
-    params={"tool": "search", "query": "test"},
-    result="found 3 results",
+    params={"tool": "search", "query": "RAG papers 2025"},
+    result=["paper1", "paper2"],
+    success=True,
+    duration_ms=1240.5,
+    session_id="sess_abc123",
+    correlation_id="req_xyz789",
 )
-```
 
----
+# Async
+results = await logger.alog("agent-1", "search", 0.95, {"q": "papers"}, "3 results")
 
-## API Reference
+# Decorator
+@log_action(agent_id="coder")
+def execute_python(code: str) -> str: ...
 
-### AgentLogger
-
-```python
-class AgentLogger(config: AgentLoggerConfig | str | Path | None = None)
-```
-
-#### Methods
-
-| Method | Description |
-|--------|-------------|
-| `log(agent_id, action, probability, params, result, ...)` | Log an action (sync) → `list[LogResult]` |
-| `alog(agent_id, action, probability, params, result, ...)` | Log an action (async) → `list[LogResult]` |
-| `log_action(entry: ActionLog)` | Log a pre-built ActionLog (sync) |
-| `alog_action(entry: ActionLog)` | Log a pre-built ActionLog (async) |
-| `flush()` | Force flush all buffered entries |
-| `health()` | Return platform health statuses |
-| `get_platform(name)` | Get a platform instance by name |
-
-#### Full signature
-
-```python
-logger.log(
-    agent_id: str,
-    action: str,
-    probability: float = 1.0,
-    params: dict | None = None,
-    result: Any = None,
-    success: bool = True,
-    duration_ms: float | None = None,
-    session_id: str | None = None,
-    correlation_id: str | None = None,
-    sensitive_fields: list[str] | None = None,
-    **metadata,
-) -> list[LogResult]
-```
-
-### Decorator
-
-```python
-from reskpoints import log_action
-
-@log_action(agent_id="search-agent")
-def search_database(query: str, limit: int = 10) -> list:
-    """Automatically logs every call with params and result."""
-    return execute_query(query, limit)
-
-# Override action name:
-@log_action(agent_id="worker", action_name="custom_action")
-def my_func():
-    ...
-```
-
-### ActionLog
-
-```python
-@dataclass
-class ActionLog:
-    id: str                     # Auto-generated UUID
-    agent_id: str
-    session_id: str | None
-    correlation_id: str | None
-    action: str
-    probability: float          # 0.0 to 1.0
-    parameters: dict
-    result: Any
-    success: bool
-    duration_ms: float | None
-    timestamp: datetime
-    environment: str
-    host: str
-    metadata: dict
-    sensitive_fields: list[str] # Fields to mask before sending
-```
-
----
-
-## Configuration
-
-Create a `reskpoints.yaml` file:
-
-```yaml
-agent_logger:
-  environment: "${ENV:development}"
-
-  masking:
-    enabled: true
-    sensitive_fields:
-      - api_key
-      - password
-      - token
-      - secret
-
-  sampling:
-    default_rate: 1.0
-    rules:
-      - action: "heartbeat"
-        rate: 0.01
-      - action: "tool_*"
-        rate: 1.0
-
-  retry:
-    max_attempts: 3
-    backoff: [0.5, 1.5, 4.5]
-    circuit_breaker:
-      threshold: 5
-      recovery_time: 30
-
-  platforms:
-    console:
-      enabled: true
-      format: "human"   # or "json"
-    webhook:
-      enabled: false
-      url: "${WEBHOOK_URL}"
-      signing_secret: "${WEBHOOK_SECRET}"
-      timeout: 10.0
-    file:
-      enabled: false
-      path: "/var/log/agent_actions.jsonl"
-    datadog:
-      enabled: false
-      api_key: "${DD_API_KEY}"
-      site: "datadoghq.eu"
-    prometheus:
-      enabled: false
-      pushgateway_url: "http://localhost:9091"
+# Check health
+logger.health()
+# → {"console": {"status": "ok"}, "datadog": {"status": "degraded", "error": ...}}
 ```
 
 ---
@@ -200,135 +159,56 @@ agent_logger:
 ## CLI
 
 ```bash
-# Log an action
 reskpoints log --agent-id agent-1 --action tool_call --params '{"tool":"search"}'
-
-# Test all enabled platforms
-reskpoints test
-
-# Show platform health
-reskpoints status
-
-# Live tail (console output)
-reskpoints tail
-
-# Replay from JSONL file
-reskpoints replay /var/log/agent_actions.jsonl
-```
-
-All commands accept `--config, -c` to specify a config path.
-
----
-
-## Platforms
-
-| Platform | Class | Dependencies | Extra |
-|----------|-------|-------------|-------|
-| Console | `ConsolePlatform` | built-in | Format: human or JSON |
-| File | `FilePlatform` | built-in | JSON Lines output |
-| Webhook | `WebhookPlatform` | built-in | HMAC signing support |
-| Prometheus | `PrometheusPlatform` | `prometheus-client` | Pushgateway |
-| Datadog | `DatadogPlatform` | `datadog-api-client` | Logs API |
-| OpenTelemetry | `OpenTelemetryPlatform` | `opentelemetry-api` | OTLP traces |
-| Mock | `MockPlatform` | built-in | In-memory for tests |
-
-### Using a platform directly
-
-```python
-from reskpoints.platforms import WebhookPlatform
-
-platform = WebhookPlatform({
-    "url": "https://hooks.example.com/logs",
-    "signing_secret": "my-secret",
-    "timeout": 5.0,
-})
-result = platform.emit(action_log)
+reskpoints test                    # Test all platforms
+reskpoints status                  # Platform health
+reskpoints tail                    # Live log stream
+reskpoints replay logs.jsonl       # Replay from file
 ```
 
 ---
 
-## Async Usage
+## Config (`reskpoints.yaml`)
 
-```python
-import asyncio
-from reskpoints import AgentLogger
-
-async def main():
-    logger = AgentLogger()
-
-    # Single action
-    results = await logger.alog(
-        agent_id="agent-1",
-        action="search",
-        probability=0.95,
-        params={"q": "hello"},
-        result="ok",
-    )
-
-    # Multiple concurrent actions
-    tasks = [
-        logger.alog(agent_id=f"agent-{i}", action="task", probability=1.0)
-        for i in range(10)
-    ]
-    all_results = await asyncio.gather(*tasks)
-
-asyncio.run(main())
+```yaml
+agent_logger:
+  sampling:
+    default_rate: 1.0
+    rules:
+      - action: "heartbeat"   rate: 0.01
+      - action: "tool_*"      rate: 1.0
+  masking:
+    enabled: true
+    sensitive_fields: [api_key, token, secret, password]
+  platforms:
+    console:
+      enabled: true
+      format: "human"
+    webhook:
+      enabled: false
+      url: "${WEBHOOK_URL}"
+      signing_secret: "${WEBHOOK_SECRET}"
+    datadog:
+      enabled: false
+      api_key: "${DD_API_KEY}"
+      site: "datadoghq.eu"
 ```
-
----
-
-## Architecture
-
-```
-Agent Action
-     │
-     ▼
-┌─────────────────────────────────────┐
-│         AgentLogger                  │
-│  ┌────────┐  ┌────────┐  ┌───────┐ │
-│  │Sampler │→ │ Masker │→ │Platforms│ │
-│  │(prob.  │  │(fields │  │(multi) │ │
-│  │ filter)│  │ +regex)│  └───┬───┘ │
-│  └────────┘  └────────┘      │     │
-└──────────────────────────────┼─────┘
-                               │
-  ┌────────────┬────────┬──────┼──────┬──────────┐
-  ▼            ▼        ▼      ▼      ▼          ▼
-Console    File     Webhook  DDog  Prometheus  OTel
-```
-
-Each platform has built-in:
-- **Retry** — exponential backoff (0.5s, 1.5s, 4.5s)
-- **Circuit breaker** — opens after 5 failures, recovers in 30s
-- **Buffering** — queues up to 1000 entries in memory
-- **Async** — native `aemit()` for event loop integration
 
 ---
 
 ## Development
 
 ```bash
-# Clone
 git clone https://github.com/Resk-Security/ReskPoints.git
 cd ReskPoints
-
-# Install with dev deps
 pip install -e ".[all,dev]"
-
-# Run tests
-pytest tests/ -v
-
-# Lint
-ruff check src/
-
-# Type check
-mypy src/
+pytest tests/ -v     # 26 tests
+ruff check src/      # clean
+mypy src/            # passes
 ```
 
 ---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE).
-
-Built with [resklogits](https://github.com/Resk-Security/resk-logits) for pattern matching and rule engine capabilities.
+MIT. Built with [resklogits](https://github.com/Resk-Security/resk-logits).
