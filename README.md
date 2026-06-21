@@ -3,6 +3,7 @@
 > **The AI Agent Logger** — track every action your agents take, with probability, parameters, and results. Ship to any platform.
 
 [![PyPI version](https://img.shields.io/pypi/v/reskpoints.svg)](https://pypi.org/project/reskpoints/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/reskpoints.svg)](https://pypi.org/project/reskpoints/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/reskpoints.svg)](https://pypi.org/project/reskpoints/)
 [![License](https://img.shields.io/pypi/l/reskpoints.svg)](https://github.com/Resk-Security/ReskPoints/blob/main/LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -56,6 +57,8 @@ def execute_python(code: str) -> str:
 ---
 
 ## Install
+
+[![PyPI downloads](https://img.shields.io/pypi/dm/reskpoints.svg)](https://pypi.org/project/reskpoints/)
 
 ```bash
 pip install reskpoints
