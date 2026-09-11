@@ -10,6 +10,8 @@
 
 🔗 [resk.fr/projects/reskpoints](https://resk.fr/projects/reskpoints.html) — part of [RESK Security](https://resk.fr)
 
+📚 Guide: [Tool Permissions for AI Agents: Least Privilege in Practice](https://resk.fr/blog/ai-agent-tool-permissions.html)
+
 ## Installation
 
 ```bash
