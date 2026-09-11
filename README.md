@@ -8,6 +8,8 @@
 [![License](https://img.shields.io/pypi/l/reskpoints.svg)](https://github.com/Resk-Security/ReskPoints/blob/main/LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
+🔗 [resk.fr/projects/reskpoints](https://resk.fr/projects/reskpoints.html) — part of [RESK Security](https://resk.fr)
+
 ## Installation
 
 ```bash
