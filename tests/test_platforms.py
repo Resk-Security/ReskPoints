@@ -60,3 +60,20 @@ class TestWebhookPlatform:
         entry = ActionLog(agent_id="test", action="webhook_test")
         result = p.emit(entry)
         assert result.success is False
+
+
+class TestWebhookSSRF:
+    def test_rejects_private_and_non_http_urls(self):
+        for url in (
+            "http://127.0.0.1:8000/hook",
+            "http://169.254.169.254/latest/meta-data",
+            "file:///etc/passwd",
+        ):
+            p = WebhookPlatform({"enabled": True, "url": url})
+            result = p.emit(ActionLog(agent_id="test", action="ssrf"))
+            assert result.success is False
+            assert "rejected" in (result.error or "")
+
+    def test_allows_private_when_explicitly_enabled(self):
+        p = WebhookPlatform({"enabled": True, "url": "http://127.0.0.1:9/hook", "allow_private": True})
+        assert p._validation_error == ""

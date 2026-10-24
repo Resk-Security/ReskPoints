@@ -39,6 +39,9 @@ jobs:
       - name: Test
         run: uv run pytest tests/ -v --tb=short
 
+      - name: Dependency audit
+        run: uv run --with pip-audit pip-audit --skip-editable
+
   build:
     needs: test
     runs-on: ubuntu-latest
