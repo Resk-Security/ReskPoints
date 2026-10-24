@@ -33,7 +33,7 @@ def _validate_webhook_url(
     except socket.gaierror as exc:
         raise ValueError(f"cannot resolve {host}: {exc}") from exc
     for info in infos:
-        ip = ipaddress.ip_address(info[4][0].split("%", 1)[0])
+        ip = ipaddress.ip_address(str(info[4][0]).split("%", 1)[0])
         if (
             ip.is_private
             or ip.is_loopback
