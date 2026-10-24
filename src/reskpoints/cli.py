@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 from .agent_logger import AgentLogger
-from .config import AgentLoggerConfig
 
 
 def cmd_log(args):
@@ -64,7 +63,7 @@ def cmd_tail(args):
     if console is None:
         print("error: console platform not enabled", file=sys.stderr)
         return 1
-    print(f"Live tailing logs (Ctrl+C to stop)...")
+    print("Live tailing logs (Ctrl+C to stop)...")
     try:
         import time
         while True:
@@ -130,7 +129,7 @@ def main():
     log_p.add_argument("--success", action="store_true", default=True, help="Success flag")
 
     # test
-    test_p = subparsers.add_parser("test", help="Test all platforms")
+    subparsers.add_parser("test", help="Test all platforms")
 
     # status
     subparsers.add_parser("status", help="Show platform health")

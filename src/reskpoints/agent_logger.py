@@ -1,13 +1,11 @@
-import os
 import platform
 import random
-import time
 from pathlib import Path
 from typing import Any
 
 from .config import AgentLoggerConfig
 from .masking import FieldMasker
-from .models import ActionLog, LogResult, PlatformHealth
+from .models import ActionLog, LogResult
 from .platforms import (
     BasePlatform,
     ConsolePlatform,
@@ -109,8 +107,8 @@ class AgentLogger:
             )
 
         results: list[LogResult] = []
-        for platform in self.platforms.values():
-            result = platform.emit(entry)
+        for p in self.platforms.values():
+            result = p.emit(entry)
             results.append(result)
         return results
 
@@ -166,8 +164,8 @@ class AgentLogger:
         return results
 
     def flush(self):
-        for platform in self.platforms.values():
-            platform.flush()
+        for p in self.platforms.values():
+            p.flush()
 
     def health(self) -> dict[str, Any]:
         return {

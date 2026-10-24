@@ -4,7 +4,6 @@ import time
 from typing import Any, Callable, TypeVar
 
 from .agent_logger import AgentLogger
-from .models import ActionLog
 
 F = TypeVar("F", bound=Callable[..., Any])
 

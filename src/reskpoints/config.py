@@ -5,7 +5,6 @@ from typing import Any
 
 import yaml
 
-
 _ENV_VAR_RE = re.compile(r"\$\{([^}:]+)(?::([^}]*))?\}")
 
 
@@ -69,10 +68,10 @@ DEFAULT_CONFIG = {
 
 class AgentLoggerConfig:
     def __init__(self, config: dict[str, Any] | None = None):
-        resolved = _resolve_env_recursive(config or {})
+        resolved: dict[str, Any] = _resolve_env_recursive(config or {})
         self._raw = resolved
 
-        section = resolved.get("agent_logger", {})
+        section: dict[str, Any] = resolved.get("agent_logger", {})
         self.environment = section.get("environment", "development")
         self.masking_config = section.get("masking", {})
         self.sampling_config = section.get("sampling", {})
@@ -82,11 +81,11 @@ class AgentLoggerConfig:
 
     @property
     def masking_enabled(self) -> bool:
-        return self.masking_config.get("enabled", True)
+        return bool(self.masking_config.get("enabled", True))
 
     @property
     def sensitive_fields(self) -> list[str]:
-        return self.masking_config.get("sensitive_fields", [])
+        return list(self.masking_config.get("sensitive_fields", []))
 
     @property
     def default_rate(self) -> float:
@@ -94,7 +93,7 @@ class AgentLoggerConfig:
 
     @property
     def sampling_rules(self) -> list[dict[str, Any]]:
-        return self.sampling_config.get("rules", [])
+        return list(self.sampling_config.get("rules", []))
 
     def get_sampling_rate(self, action: str) -> float:
         for rule in self.sampling_rules:
@@ -104,7 +103,7 @@ class AgentLoggerConfig:
         return self.default_rate
 
     def get_platform_config(self, name: str) -> dict[str, Any]:
-        return self.platforms_config.get(name, {})
+        return dict(self.platforms_config.get(name, {}))
 
     @classmethod
     def from_file(cls, path: str | Path) -> "AgentLoggerConfig":

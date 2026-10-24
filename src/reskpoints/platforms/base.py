@@ -1,6 +1,5 @@
 import abc
 import time
-from collections.abc import Callable
 from typing import Any
 
 from ..models import ActionLog, LogResult, PlatformHealth
@@ -25,7 +24,7 @@ class BasePlatform(abc.ABC):
 
     @property
     def enabled(self) -> bool:
-        return self._enabled
+        return bool(self._enabled)
 
     @property
     def name(self) -> str:
