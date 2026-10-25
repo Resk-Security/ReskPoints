@@ -1,6 +1,6 @@
 [project]
 name = "reskpoints"
-version = "0.1.2"
+version = "0.1.3"
 description = "Agent Action Logging Platform — log all AI/LLM agent actions to any platform"
 readme = "README.md"
 license = {text = "Apache-2.0"}
