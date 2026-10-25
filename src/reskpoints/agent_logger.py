@@ -1,3 +1,4 @@
+import logging
 import platform
 import random
 from pathlib import Path
@@ -13,6 +14,8 @@ from .platforms import (
     MockPlatform,
     WebhookPlatform,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class AgentLogger:
@@ -47,13 +50,27 @@ class AgentLogger:
             from .platforms.prometheus import PrometheusPlatform
             registry["prometheus"] = PrometheusPlatform
         except ImportError:
-            pass
+            if platform_configs.get("prometheus", {}).get("enabled"):
+                logger.warning(
+                    "prometheus platform is enabled but prometheus-client is not installed; "
+                    "install reskpoints[prometheus]"
+                )
 
         try:
             from .platforms.datadog import DatadogPlatform
             registry["datadog"] = DatadogPlatform
         except ImportError:
-            pass
+            if platform_configs.get("datadog", {}).get("enabled"):
+                logger.warning(
+                    "datadog platform is enabled but datadog-api-client is not installed; "
+                    "install reskpoints[datadog]"
+                )
+
+        # The OpenTelemetry platform imports its SDK lazily; registering it here
+        # makes `platforms.opentelemetry` selectable from reskpoints.yaml.
+        from .platforms.opentelemetry import OpenTelemetryPlatform
+        registry["opentelemetry"] = OpenTelemetryPlatform
+        registry["mock"] = MockPlatform
 
         for name, platform_cls in registry.items():
             cfg = platform_configs.get(name, {})
@@ -62,6 +79,11 @@ class AgentLogger:
                 self.platforms[name] = instance
 
         if not self.platforms:
+            logger.warning(
+                "No logging platform is enabled in the configuration; events are captured "
+                "by an in-memory mock platform and will be discarded. Enable at least one "
+                "platform under agent_logger.platforms."
+            )
             self.platforms["mock"] = MockPlatform({"enabled": True})
 
     def log(

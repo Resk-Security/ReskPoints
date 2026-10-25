@@ -87,3 +87,31 @@ class TestAgentLogger:
         })
         logger = AgentLogger(config)
         assert "mock" in logger.platforms or len(logger.platforms) > 0
+
+
+class TestPlatformSelection:
+    def test_opentelemetry_is_selectable_from_yaml(self):
+        from reskpoints.platforms.opentelemetry import OpenTelemetryPlatform
+
+        logger = AgentLogger(AgentLoggerConfig({
+            "agent_logger": {
+                "platforms": {"opentelemetry": {"enabled": True, "endpoint": "http://localhost:4318"}},
+            }
+        }))
+
+        assert isinstance(logger.platforms["opentelemetry"], OpenTelemetryPlatform)
+
+    def test_missing_platforms_warns_and_falls_back_to_mock(self, caplog):
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            logger = AgentLogger(AgentLoggerConfig({"agent_logger": {}}))
+
+        assert "mock" in logger.platforms
+        assert any("discarded" in record.message for record in caplog.records)
+
+    def test_explicit_mock_platform(self):
+        logger = AgentLogger(AgentLoggerConfig({
+            "agent_logger": {"platforms": {"mock": {"enabled": True}}}
+        }))
+        assert logger.platforms["mock"].name == "mock"
